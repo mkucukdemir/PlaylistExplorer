@@ -26,6 +26,9 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Recommended readings: https://northcoder.com/post/lucene-fields-and-term-vectors/
+ */
 public class BuildIndexer {
     public void run() {
 
@@ -56,6 +59,9 @@ public class BuildIndexer {
             // This is the field setting for metadata field (no tokenization, searchable, and stored).
             FieldType fieldTypeMetadata = new FieldType();
             fieldTypeMetadata.setOmitNorms( true );
+            // Only documents are indexed: term frequencies and positions are omitted.
+            // Phrase and other positional queries on the field will throw an exception,
+            // and scoring will behave as if any term in the document appears only once
             fieldTypeMetadata.setIndexOptions( IndexOptions.DOCS );
             fieldTypeMetadata.setStored( true );
             fieldTypeMetadata.setTokenized( false );
@@ -63,6 +69,9 @@ public class BuildIndexer {
 
             // This is the field setting for normal text field (tokenized, searchable, store document vectors)
             FieldType fieldTypeText = new FieldType();
+            // Indexes documents, frequencies and positions.
+            // This is a typical default for full-text search:
+            // full scoring is enabled and positional queries are supported.
             fieldTypeText.setIndexOptions( IndexOptions.DOCS_AND_FREQS_AND_POSITIONS );
             fieldTypeText.setStoreTermVectors( true );
             fieldTypeText.setStoreTermVectorPositions( true );
@@ -91,7 +100,8 @@ public class BuildIndexer {
 
                                     // Create Lucene Document
                                     Document document = new Document();
-
+                                    // Playlist is metadata
+                                    // Track name, album name and artist name are token
                                     document.add(new Field("track_name", track.getTrack_name(), fieldTypeText));
                                     document.add(new Field("album_name", track.getAlbum_name(), fieldTypeText));
                                     document.add(new Field("artist_name", track.getArtist_name(), fieldTypeText));
